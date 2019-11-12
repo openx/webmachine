@@ -188,7 +188,7 @@ handle_error(Code, Error, Req) ->
     {ok,Req2} = webmachine_request:append_to_response_body(ErrorHTML, Req1),
     {ok,Req3} = webmachine_request:send_response(Code, Req2),
     {LogData,_ReqState4} = webmachine_request:log_data(Req3),
-    spawn(webmachine_log, log_access, [LogData]),
+    webmachine_log:log_access(LogData),
     ok.
 
 get_wm_option(OptName, {WMOptions, OtherOptions}) ->

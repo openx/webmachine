@@ -59,6 +59,9 @@ init([]) ->
         {webmachine_router,
          {webmachine_router, start_link, []},
          permanent, 5000, worker, [webmachine_router]},
+
+    webmachine_log:set_custom_log_access(default),
+
     LogHandler =
         [{webmachine_logger,
           {gen_event, start_link, [{local, ?EVENT_LOGGER}]},

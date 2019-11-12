@@ -15,3 +15,4 @@
 -type wm_log_data() :: #wm_log_data{}.
 
 -define(EVENT_LOGGER, webmachine_log_event).
+-define(EVENT_LOGGER_ACCESS, 'webmachine_log_access').
