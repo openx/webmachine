@@ -124,9 +124,20 @@ fmtnow() ->
     io_lib:format("[~2..0w/~s/~4..0w:~2..0w:~2..0w:~2..0w ~s]",
                   [Date,month(Month),Year, Hour, Min, Sec, zone()]).
 
-set_custom_log_access({Mod, Name}) ->
-  error_logger:info_msg("set_custom_log_access: using ~p:~p~n", [Mod, Name]),
-  mochiglobal:put(?EVENT_LOGGER_ACCESS, {Mod, Name});
+set_custom_log_access({Module, Function}) ->
+  case code:which (Module) of
+  non_existing ->
+    throw({Module, non_existing});
+  _ ->
+    code:ensure_loaded (Module),
+    case erlang:function_exported (Module, Function, 1) of
+      false -> 
+        throw({Module, Function, 1, non_existing});
+      true ->
+        error_logger:info_msg("set_custom_log_access: using ~p:~p/1~n", [Module, Function]),
+        mochiglobal:put(?EVENT_LOGGER_ACCESS, {Module, Function})
+    end
+  end;
 set_custom_log_access(_) ->
   error_logger:info_msg("set_custom_log_access: using default custom log_access~n", []),
   mochiglobal:put(?EVENT_LOGGER_ACCESS, default).
