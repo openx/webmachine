@@ -102,7 +102,8 @@ finish_response({Code, _}=CodeAndPhrase, Resource, EndTime) ->
     LogData = LogData0#wm_log_data{resource_module=RMod,
                                    end_time=EndTime,
                                    notes=Notes},
-    spawn(fun() -> do_log(LogData) end),
+    webmachine_log:log_access(LogData),
+
     webmachine_resource:stop(Resource).
 
 error_response(Reason) ->
@@ -153,9 +154,6 @@ decision_flow(X, TestResult) when is_integer(X) ->
        true -> respond(X)
     end;
 decision_flow(X, _TestResult) when is_atom(X) -> d(X).
-
-do_log(LogData) ->
-    webmachine_log:log_access(LogData).
 
 log_decision(DecisionID) ->
     Resource = get(resource),

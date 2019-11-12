@@ -42,6 +42,7 @@
          maybe_rotate/5,
          month/1,
          refresh/2,
+         set_custom_log_access/1,
          suffix/1,
          zeropad/2,
          zone/0]).
@@ -123,10 +124,21 @@ fmtnow() ->
     io_lib:format("[~2..0w/~s/~4..0w:~2..0w:~2..0w:~2..0w ~s]",
                   [Date,month(Month),Year, Hour, Min, Sec, zone()]).
 
+set_custom_log_access({Mod, Name}) ->
+  error_logger:info_msg("set_custom_log_access: using ~p:~p~n", [Mod, Name]),
+  mochiglobal:put(?EVENT_LOGGER_ACCESS, {Mod, Name});
+set_custom_log_access(_) ->
+  error_logger:info_msg("set_custom_log_access: using default custom log_access~n", []),
+  mochiglobal:put(?EVENT_LOGGER_ACCESS, default).
+
+
 %% @doc Notify registered log event handler of an access event.
 -spec log_access(wm_log_data()) -> ok.
 log_access(#wm_log_data{}=LogData) ->
-    gen_event:sync_notify(?EVENT_LOGGER, {log_access, LogData}).
+  case mochiglobal:get(?EVENT_LOGGER_ACCESS) of
+    {Module, Function} -> Module:Function(LogData);
+    _                  -> spawn(fun() -> gen_event:sync_notify(?EVENT_LOGGER, {log_access, LogData}) end)
+  end.
 
 %% @doc Close a log file.
 -spec log_close(atom(), string(), file:io_device()) -> ok | {error, term()}.
